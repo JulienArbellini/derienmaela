@@ -2,9 +2,8 @@ import nextConnect from 'next-connect';
 import multer from 'multer';
 import OpenAI from 'openai';
 import fs from 'fs';
-import path from 'path';
 
-const upload = multer({ dest: 'public/uploads/' });
+const upload = multer({ storage: multer.memoryStorage() });
 
 const apiRoute = nextConnect({
   onError(error, req, res) {
@@ -21,11 +20,7 @@ apiRoute.post(async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const filePath = path.join(process.cwd(), 'public/uploads', req.file.filename);
-    console.log(`File uploaded to: ${filePath}`);
-
-    const fileData = fs.readFileSync(filePath);
-    const base64Image = fileData.toString('base64');
+    const base64Image = req.file.buffer.toString('base64');
     console.log('File read successfully');
 
     const openai = new OpenAI({
@@ -68,5 +63,3 @@ export const config = {
     bodyParser: false, // Désactiver le bodyParser par défaut pour Multer
   },
 };
-
-//test
