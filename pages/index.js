@@ -6,8 +6,8 @@ export default function Home() {
     const [file, setFile] = useState(null);
     const [preview, setPreview] = useState('');
     const [structuredData, setStructuredData] = useState({});
-    const [editableData, setEditableData] = useState({});
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false); // Nouvel état pour le chargement
 
     useEffect(() => {
         if (file) {
@@ -31,30 +31,24 @@ export default function Home() {
         formData.append('file', file);
 
         try {
+            setLoading(true); // Afficher la roue de chargement
             const response = await axios.post('/api/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
             });
             setStructuredData(response.data.structured_data);
-            setEditableData(response.data.structured_data); // Set editable data initially
             setError('');
         } catch (err) {
             console.error('Error uploading file:', err);
             setError(err.response?.data?.error || 'An error occurred while uploading the file.');
+        } finally {
+            setLoading(false); // Masquer la roue de chargement
         }
     };
 
     const handleCopy = () => {
-        let tableText = '';
-
-        Object.values(editableData).forEach((value, index) => {
-            tableText += `${value}`;
-            if (index < Object.values(editableData).length - 1) {
-                tableText += '\t'; // Ajouter une tabulation entre les valeurs pour les mettre sur une seule ligne
-            }
-        });
-
+        const tableText = Object.values(structuredData).join('\t');
         navigator.clipboard.writeText(tableText).then(() => {
             alert('Le contenu a été copié dans le presse-papiers.');
         }).catch(err => {
@@ -62,35 +56,19 @@ export default function Home() {
         });
     };
 
-    const handleInputChange = (e, key) => {
-        setEditableData({
-            ...editableData,
-            [key]: e.target.value,
-        });
-    };
-
-    const renderEditableData = (data) => {
-        return Object.entries(data).map(([key, value]) => (
-            <div key={key} className="input-group">
-                <label>{key}:</label>
-                <input 
-                    type="text" 
-                    value={value || ''} // Ensure the field is empty if there is no data
-                    onChange={(e) => handleInputChange(e, key)} 
-                />
-            </div>
-        ));
-    };
-
     return (
         <div className="container">
             <h1>Drag and drop ta facture ici 👇</h1>
-
             <div className="upload-area" onClick={() => document.getElementById('file-input').click()}>
                 <input type="file" id="file-input" onChange={handleFileChange} style={{ display: 'none' }} />
                 <p>Click or Drag and Drop your invoice here</p>
             </div>
-
+            {loading && (
+                <div id="loading-overlay">
+                    <div className="loader"></div>
+                    <div className="loader-message">Traitement en cours, veuillez patienter...</div>
+                </div>
+            )}
             {preview && (
                 <div className="content-container">
                     <div className="preview-section">
@@ -102,7 +80,22 @@ export default function Home() {
                     <div className="extracted-info-container">
                         <h2>Informations extraites :</h2>
                         <div className="content">
-                            {renderEditableData(editableData)}
+                            <table className="styled-table">
+                                <thead>
+                                    <tr>
+                                        <th>Champ</th>
+                                        <th>Valeur</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Object.entries(structuredData).map(([key, value]) => (
+                                        <tr key={key}>
+                                            <td>{key}</td>
+                                            <td>{value}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                             <div className="buttons-container">
                                 <button onClick={handleCopy}>Copier</button>
                             </div>
