@@ -49,6 +49,18 @@ apiRoute.post(async (req, res) => {
     // Assuming the response content is already in JSON format
     const structuredData = JSON.parse(content.match(/```json(.*?)```/s)[1].trim());
 
+    // Log token usage and cost
+    const promptTokens = response.usage.prompt_tokens;
+    const completionTokens = response.usage.completion_tokens;
+    const totalTokens = response.usage.total_tokens;
+    const costPerToken = 0.02 / 1000; // Example cost per token for gpt-4-turbo
+    const totalCost = totalTokens * costPerToken;
+
+    console.log(`Prompt Tokens: ${promptTokens}`);
+    console.log(`Completion Tokens: ${completionTokens}`);
+    console.log(`Total Tokens: ${totalTokens}`);
+    console.log(`Total Cost: $${totalCost.toFixed(6)}`);
+
     res.status(200).json({ structured_data: structuredData });
   } catch (error) {
     console.error('Error during OpenAI API call:', error);
