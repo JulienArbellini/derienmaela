@@ -204,6 +204,21 @@ button:hover {
     border-radius: 4px;
 }
 
+input {
+    border: 1px solid #e2e8f0; /* Default border color */
+    padding: 0.5rem; /* Adjust padding as needed */
+    width: 100%; /* Ensure the input takes the full width of the cell */
+    box-sizing: border-box; /* Ensure padding is included in the width */
+    transition: border 0.2s ease, box-shadow 0.2s ease; /* Smooth transition for focus */
+  }
+  
+  input:focus {
+    border: 2px solid #63f40f; /* Focus border color */
+    outline: none; /* Remove default outline */
+    box-shadow: none; /* Optional: Add a shadow to emphasize focus */
+  }
+  
+
 .buttons-container {
     display: flex;
     justify-content: flex-end;
