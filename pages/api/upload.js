@@ -1,7 +1,6 @@
 import nextConnect from 'next-connect';
 import multer from 'multer';
-import OpenAI from 'openai';
-import fs from 'fs';
+import { extractInvoiceData } from '../../services/openai';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -23,44 +22,8 @@ apiRoute.post(async (req, res) => {
     const base64Image = req.file.buffer.toString('base64');
     console.log('File read successfully');
 
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4-turbo',
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: "Extrait les informations suivantes de cette image de facture et retourne les au format JSON. Chaque champ doit contenir uniquement du texte simple et ne doit pas être imbriqué. Si un champ n'a pas de données, il doit être laissé vide : Entreprise, Date, Devis, Localisation, Désignation (résumé concis des articles), Montant initial du devis, TS, TMA, Commentaires, OS, OBS, OS déposé sur DOCUS, OS signé MOE, Total OS signé, Repart OS/TS." },
-            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64Image}` } },
-          ],
-        },
-      ],
-    });
-
-    if (!response || !response.choices || response.choices.length === 0) {
-      throw new Error('No choices returned from OpenAI API');
-    }
-
-    const content = response.choices[0].message.content;
-
-    // Assuming the response content is already in JSON format
-    const structuredData = JSON.parse(content.match(/```json(.*?)```/s)[1].trim());
-
-    // Log token usage and cost
-    const promptTokens = response.usage.prompt_tokens;
-    const completionTokens = response.usage.completion_tokens;
-    const totalTokens = response.usage.total_tokens;
-    const costPerToken = 0.02 / 1000; // Example cost per token for gpt-4-turbo
-    const totalCost = totalTokens * costPerToken;
-
-    console.log(`Prompt Tokens: ${promptTokens}`);
-    console.log(`Completion Tokens: ${completionTokens}`);
-    console.log(`Total Tokens: ${totalTokens}`);
-    console.log(`Total Cost: $${totalCost.toFixed(6)}`);
-
+    const structuredData = await extractInvoiceData(base64Image);
+    
     res.status(200).json({ structured_data: structuredData });
   } catch (error) {
     console.error('Error during OpenAI API call:', error);
@@ -72,6 +35,6 @@ export default apiRoute;
 
 export const config = {
   api: {
-    bodyParser: false, // Désactiver le bodyParser par défaut pour Multer
+    bodyParser: false,
   },
 };
