@@ -32,7 +32,7 @@ const Preview = ({ file, preview, pdfData }) => {
   }, [file, pdfData]);
 
   return (
-    <div className="w-full lg:w-1/2 mb-4 lg:mb-0">
+    <div className="w-full lg:w-1/2 mb-5 lg:mb-0">
       <h2 className="text-lg font-semibold mb-2">Invoice Preview</h2>
       <div className="border p-4 rounded bg-base-100 flex justify-center items-center">
         {file && file.type === 'application/pdf' ? (
