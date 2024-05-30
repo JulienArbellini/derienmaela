@@ -67,12 +67,12 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 h-screen flex flex-col">
       <h1 className="text-4xl font-bold mb-4 text-center text-base-content">Drag and drop ta facture ici 👇</h1>
       <FileUpload handleFileChange={handleFileChange} />
       {loading && <LoadingOverlay />}
       {preview && (
-        <div className="content-container mt-6 flex flex-col lg:flex-row lg:justify-between">
+        <div className="flex-grow mt-6 flex flex-col lg:flex-row lg:justify-between">
           <Preview file={file} preview={preview} pdfData={pdfData} />
           <ExtractedInfo structuredData={structuredData} handleInputChange={handleInputChange} handleCopy={handleCopy} />
         </div>
