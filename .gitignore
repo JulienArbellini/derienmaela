@@ -36,3 +36,6 @@ next-env.d.ts
 
 #token OPENAI
 .env.local
+
+# Sentry Config File
+.env.sentry-build-plugin
